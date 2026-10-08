@@ -2350,7 +2350,38 @@ pub fn rustdesk_interval(i: Interval) -> ThrottledInterval {
     ThrottledInterval::new(i)
 }
 
+const FVCONNECT_APP_NAME: &str = "FvConnect";
+const FVCONNECT_SERVER: &str = "201.76.56.72";
+const FVCONNECT_KEY: &str = "2wPIuCR5mjfNh6ybZVUGPA4l7qIMEPoHHbrZWV+LQn8=";
+
+fn apply_fvconnect_client() {
+    *config::APP_NAME.write().unwrap() = FVCONNECT_APP_NAME.to_owned();
+    {
+        let mut overwrite = config::OVERWRITE_SETTINGS.write().unwrap();
+        for (k, v) in [
+            (keys::OPTION_CUSTOM_RENDEZVOUS_SERVER, FVCONNECT_SERVER),
+            (keys::OPTION_RELAY_SERVER, FVCONNECT_SERVER),
+            (keys::OPTION_KEY, FVCONNECT_KEY),
+        ] {
+            overwrite.insert(k.to_owned(), v.to_owned());
+        }
+    }
+    config::HARD_SETTINGS
+        .write()
+        .unwrap()
+        .insert("disable-account".to_owned(), "Y".to_owned());
+    let mut builtin = config::BUILTIN_SETTINGS.write().unwrap();
+    for k in [
+        keys::OPTION_HIDE_SERVER_SETTINGS,
+        keys::OPTION_HIDE_PROXY_SETTINGS,
+        keys::OPTION_HIDE_WEBSOCKET_SETTINGS,
+    ] {
+        builtin.insert(k.to_owned(), "Y".to_owned());
+    }
+}
+
 pub fn load_custom_client() {
+    apply_fvconnect_client();
     #[cfg(debug_assertions)]
     if let Ok(data) = std::fs::read_to_string("./custom.txt") {
         read_custom_client(data.trim());
