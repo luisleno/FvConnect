@@ -2375,6 +2375,7 @@ fn apply_fvconnect_client() {
         keys::OPTION_HIDE_SERVER_SETTINGS,
         keys::OPTION_HIDE_PROXY_SETTINGS,
         keys::OPTION_HIDE_WEBSOCKET_SETTINGS,
+        keys::OPTION_HIDE_POWERED_BY_ME,
     ] {
         builtin.insert(k.to_owned(), "Y".to_owned());
     }
