@@ -9,6 +9,7 @@ import 'package:flutter_hbb/common.dart';
 import 'package:flutter_hbb/common/widgets/audio_input.dart';
 import 'package:flutter_hbb/common/widgets/setting_widgets.dart';
 import 'package:flutter_hbb/consts.dart';
+import 'package:flutter_hbb/desktop/widgets/fv_style.dart';
 import 'package:flutter_hbb/desktop/pages/desktop_home_page.dart';
 import 'package:flutter_hbb/desktop/pages/desktop_tab_page.dart';
 import 'package:flutter_hbb/desktop/widgets/remote_toolbar.dart';
@@ -274,7 +275,7 @@ class _DesktopSettingPageState extends State<DesktopSettingPage>
   Widget build(BuildContext context) {
     super.build(context);
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.background,
+      backgroundColor: FvColors.sidebar(context),
       body: _buildBlock(
         children: <Widget>[
           SizedBox(
@@ -286,10 +287,10 @@ class _DesktopSettingPageState extends State<DesktopSettingPage>
               ],
             ),
           ),
-          const VerticalDivider(width: 1),
+          VerticalDivider(width: 1, color: FvColors.border(context)),
           Expanded(
             child: Container(
-              color: Theme.of(context).scaffoldBackgroundColor,
+              color: FvColors.page(context),
               child: PageView(
                 controller: controller,
                 physics: NeverScrollableScrollPhysics(),
@@ -352,9 +353,10 @@ class _DesktopSettingPageState extends State<DesktopSettingPage>
   Widget _listItem({required _TabInfo tab}) {
     return Obx(() {
       bool selected = tab.key == selectedTab.value;
-      return SizedBox(
+      return Container(
         width: _kTabWidth,
         height: _kTabHeight,
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
         child: InkWell(
           onTap: () {
             if (selectedTab.value != tab.key) {
@@ -366,25 +368,33 @@ class _DesktopSettingPageState extends State<DesktopSettingPage>
             }
             selectedTab.value = tab.key;
           },
-          child: Row(children: [
-            Container(
-              width: 4,
-              height: _kTabHeight * 0.7,
-              color: selected ? _accentColor : null,
+          borderRadius: BorderRadius.circular(8),
+          child: Container(
+            decoration: BoxDecoration(
+              color: selected ? FvColors.selectedBg(context) : null,
+              borderRadius: BorderRadius.circular(8),
             ),
-            Icon(
-              selected ? tab.selected : tab.unselected,
-              color: selected ? _accentColor : null,
-              size: 20,
-            ).marginOnly(left: 13, right: 10),
-            Text(
-              translate(tab.label),
-              style: TextStyle(
-                  color: selected ? _accentColor : null,
-                  fontWeight: FontWeight.w400,
-                  fontSize: _kContentFontSize),
-            ),
-          ]),
+            child: Row(children: [
+              Icon(
+                selected ? tab.selected : tab.unselected,
+                color: selected
+                    ? FvColors.accentText(context)
+                    : FvColors.muted(context),
+                size: 20,
+              ).marginOnly(left: 12, right: 10),
+              Flexible(
+                child: Text(
+                  translate(tab.label),
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                      color: selected ? FvColors.accentText(context) : null,
+                      fontWeight:
+                          selected ? FontWeight.w600 : FontWeight.w400,
+                      fontSize: _kContentFontSize),
+                ),
+              ),
+            ]),
+          ),
         ),
       );
     });
@@ -2617,7 +2627,14 @@ Widget _Card(
       Flexible(
         child: SizedBox(
           width: _kCardFixedWidth,
-          child: Card(
+          child: Builder(
+            builder: (context) => Card(
+            elevation: 0,
+            color: FvColors.card(context),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+              side: BorderSide(color: FvColors.border(context)),
+            ),
             child: Column(
               children: [
                 Row(
@@ -2627,7 +2644,8 @@ Widget _Card(
                       translate(title),
                       textAlign: TextAlign.start,
                       style: const TextStyle(
-                        fontSize: _kTitleFontSize,
+                        fontSize: 17,
+                        fontWeight: FontWeight.w600,
                       ),
                     )),
                     ...?title_suffix
@@ -2637,7 +2655,7 @@ Widget _Card(
                     .map((e) => e.marginOnly(top: 4, right: _kContentHMargin)),
               ],
             ).marginOnly(bottom: 10),
-          ).marginOnly(left: _kCardLeftMargin, top: 15),
+          )).marginOnly(left: _kCardLeftMargin, top: 15),
         ),
       ),
     ],

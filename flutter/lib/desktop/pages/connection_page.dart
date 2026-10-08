@@ -19,6 +19,7 @@ import '../../common/formatter/id_formatter.dart';
 import '../../common/widgets/peer_tab_page.dart';
 import '../../common/widgets/autocomplete.dart';
 import '../../models/platform_model.dart';
+import '../widgets/fv_style.dart';
 import '../../desktop/widgets/material_mod_popup_menu.dart' as mod_menu;
 
 class OnlineStatusWidget extends StatefulWidget {
@@ -189,7 +190,10 @@ class _OnlineStatusWidgetState extends State<OnlineStatusWidget> {
 
 /// Connection page for connecting to a remote peer.
 class ConnectionPage extends StatefulWidget {
-  const ConnectionPage({Key? key}) : super(key: key);
+  const ConnectionPage({Key? key, this.banner, this.idCard}) : super(key: key);
+
+  final Widget? banner;
+  final Widget? idCard;
 
   @override
   State<ConnectionPage> createState() => _ConnectionPageState();
@@ -301,9 +305,43 @@ class _ConnectionPageState extends State<ConnectionPage>
     }
   }
 
+  Widget _buildFv(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          if (widget.banner != null) widget.banner!,
+          const SizedBox(height: 12),
+          SizedBox(
+            height: 248,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                if (widget.idCard != null) Expanded(child: widget.idCard!),
+                if (widget.idCard != null) const SizedBox(width: 12),
+                Expanded(child: _buildRemoteIDTextField(context)),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+          Expanded(
+            child: FvCard(
+              padding: const EdgeInsets.fromLTRB(12, 8, 4, 8),
+              child: PeerTabPage(),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final isOutgoingOnly = bind.isOutgoingOnly();
+    if (widget.banner != null || widget.idCard != null) {
+      return _buildFv(context);
+    }
     return Column(
       children: [
         Expanded(
@@ -343,12 +381,19 @@ class _ConnectionPageState extends State<ConnectionPage>
   /// UI for the remote ID TextField.
   /// Search for a peer.
   Widget _buildRemoteIDTextField(BuildContext context) {
+    final fv = widget.banner != null || widget.idCard != null;
     var w = Container(
-      width: 320 + 20 * 2,
-      padding: const EdgeInsets.fromLTRB(20, 24, 20, 22),
+      width: fv ? null : 320 + 20 * 2,
+      padding: fv
+          ? const EdgeInsets.fromLTRB(16, 14, 16, 14)
+          : const EdgeInsets.fromLTRB(20, 24, 20, 22),
       decoration: BoxDecoration(
-          borderRadius: const BorderRadius.all(Radius.circular(13)),
-          border: Border.all(color: Theme.of(context).colorScheme.background)),
+          color: fv ? FvColors.card(context) : null,
+          borderRadius: BorderRadius.all(Radius.circular(fv ? 12 : 13)),
+          border: Border.all(
+              color: fv
+                  ? FvColors.border(context)
+                  : Theme.of(context).colorScheme.background)),
       child: Ink(
         child: Column(
           children: [
@@ -518,8 +563,10 @@ class _ConnectionPageState extends State<ConnectionPage>
             Padding(
               padding: const EdgeInsets.only(top: 13.0),
               child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+                if (fv) const Spacer(),
                 SizedBox(
-                  height: 28.0,
+                  height: fv ? 36.0 : 28.0,
+                  width: fv ? 160.0 : null,
                   child: ElevatedButton(
                     onPressed: () {
                       onConnect();
@@ -529,8 +576,8 @@ class _ConnectionPageState extends State<ConnectionPage>
                 ),
                 const SizedBox(width: 8),
                 Container(
-                  height: 28.0,
-                  width: 28.0,
+                  height: fv ? 36.0 : 28.0,
+                  width: fv ? 36.0 : 28.0,
                   decoration: BoxDecoration(
                     border: Border.all(color: Theme.of(context).dividerColor),
                     borderRadius: BorderRadius.circular(8),
@@ -620,6 +667,7 @@ class _ConnectionPageState extends State<ConnectionPage>
         ),
       ),
     );
+    if (fv) return w;
     return Container(
         constraints: const BoxConstraints(maxWidth: 600), child: w);
   }

@@ -2366,6 +2366,17 @@ fn apply_fvconnect_client() {
             overwrite.insert(k.to_owned(), v.to_owned());
         }
     }
+    {
+        let mut defaults = config::DEFAULT_SETTINGS.write().unwrap();
+        defaults.insert(
+            keys::OPTION_APPROVE_MODE.to_owned(),
+            "password-click".to_owned(),
+        );
+        defaults.insert(
+            keys::OPTION_VERIFICATION_METHOD.to_owned(),
+            "use-both-passwords".to_owned(),
+        );
+    }
     config::HARD_SETTINGS
         .write()
         .unwrap()

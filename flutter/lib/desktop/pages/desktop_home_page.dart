@@ -24,6 +24,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:window_size/window_size.dart' as window_size;
 import '../widgets/button.dart';
+import '../widgets/fv_style.dart';
 
 class DesktopHomePage extends StatefulWidget {
   const DesktopHomePage({Key? key}) : super(key: key);
@@ -59,15 +60,141 @@ class _DesktopHomePageState extends State<DesktopHomePage>
   Widget build(BuildContext context) {
     super.build(context);
     final isIncomingOnly = bind.isIncomingOnly();
+    if (!isIncomingOnly) {
+      return _buildBlock(
+          child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const FvSidebar(),
+          Expanded(child: buildFvRightPane(context)),
+        ],
+      ));
+    }
     return _buildBlock(
         child: Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         buildLeftPane(context),
-        if (!isIncomingOnly) const VerticalDivider(width: 1),
-        if (!isIncomingOnly) Expanded(child: buildRightPane(context)),
       ],
     ));
+  }
+
+  Widget buildFvRightPane(BuildContext context) {
+    final isOutgoingOnly = bind.isOutgoingOnly();
+    return Container(
+      color: FvColors.page(context),
+      child: ConnectionPage(
+        banner: Column(
+          children: [
+            if (!isOutgoingOnly) buildPresetPasswordWarning(),
+            Obx(() => buildHelpCards(stateGlobal.updateUrl.value)),
+          ],
+        ),
+        idCard: isOutgoingOnly ? null : buildFvIdCard(context),
+      ),
+    );
+  }
+
+  Widget buildFvIdCard(BuildContext context) {
+    final model = gFFI.serverModel;
+    final muted = FvColors.muted(context);
+    return ChangeNotifierProvider.value(
+      value: model,
+      child: Consumer<ServerModel>(builder: (context, model, _) {
+        final showOneTime = model.approveMode != 'click' &&
+            model.verificationMethod != kUsePermanentPassword;
+        return FvCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(translate('Your Desktop'),
+                        style: const TextStyle(
+                            fontSize: 15, fontWeight: FontWeight.w600)),
+                  ),
+                  buildPopupMenu(context),
+                ],
+              ),
+              Text(translate('ID'), style: TextStyle(fontSize: 13, color: muted))
+                  .marginOnly(top: 6),
+              GestureDetector(
+                onDoubleTap: () {
+                  Clipboard.setData(ClipboardData(text: model.serverId.text));
+                  showToast(translate("Copied"));
+                },
+                child: TextFormField(
+                  controller: model.serverId,
+                  readOnly: true,
+                  decoration: const InputDecoration(
+                    border: InputBorder.none,
+                    filled: false,
+                    isDense: true,
+                    contentPadding: EdgeInsets.symmetric(vertical: 4),
+                  ),
+                  style: TextStyle(
+                      fontSize: 26,
+                      letterSpacing: 1,
+                      fontWeight: FontWeight.w500,
+                      color: FvColors.accentText(context)),
+                ).workaroundFreezeLinuxMint(),
+              ),
+              Text(translate('One-time Password'),
+                      style: TextStyle(fontSize: 13, color: muted))
+                  .marginOnly(top: 6),
+              Row(
+                children: [
+                  Expanded(
+                    child: GestureDetector(
+                      onDoubleTap: () {
+                        if (showOneTime) {
+                          Clipboard.setData(
+                              ClipboardData(text: model.serverPasswd.text));
+                          showToast(translate("Copied"));
+                        }
+                      },
+                      child: TextFormField(
+                        controller: model.serverPasswd,
+                        readOnly: true,
+                        decoration: const InputDecoration(
+                          border: InputBorder.none,
+                          filled: false,
+                          isDense: true,
+                          contentPadding: EdgeInsets.symmetric(vertical: 4),
+                        ),
+                        style: const TextStyle(
+                            fontSize: 17, fontWeight: FontWeight.w500),
+                      ).workaroundFreezeLinuxMint(),
+                    ),
+                  ),
+                  if (showOneTime)
+                    IconButton(
+                      tooltip: translate('Refresh Password'),
+                      constraints: const BoxConstraints(
+                          minWidth: 34, minHeight: 34),
+                      padding: EdgeInsets.zero,
+                      icon: Icon(Icons.refresh, size: 20, color: muted),
+                      onPressed: () => bind.mainUpdateTemporaryPassword(),
+                    ),
+                  if (!bind.isDisableSettings())
+                    IconButton(
+                      tooltip: translate('Change Password'),
+                      constraints: const BoxConstraints(
+                          minWidth: 34, minHeight: 34),
+                      padding: EdgeInsets.zero,
+                      icon: Icon(Icons.edit_outlined, size: 20, color: muted),
+                      onPressed: () =>
+                          DesktopSettingPage.switch2page(SettingsTabKey.safety),
+                    ),
+                ],
+              ),
+              const OnlineStatusWidget(),
+            ],
+          ),
+        );
+      }),
+    );
   }
 
   Widget _buildBlock({required Widget child}) {
@@ -608,14 +735,15 @@ class _DesktopHomePageState extends State<DesktopHomePage>
               0, marginTop, 0, bind.isIncomingOnly() ? marginTop : 0),
           child: Container(
               decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
                   gradient: LinearGradient(
-                begin: Alignment.centerLeft,
-                end: Alignment.centerRight,
-                colors: [
-                  Color.fromARGB(255, 226, 66, 188),
-                  Color.fromARGB(255, 244, 114, 124),
-                ],
-              )),
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                    colors: [
+                      MyTheme.accent,
+                      MyTheme.idColor,
+                    ],
+                  )),
               padding: EdgeInsets.all(20),
               child: Column(
                   mainAxisAlignment: MainAxisAlignment.start,
