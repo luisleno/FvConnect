@@ -11,6 +11,8 @@ WORK=$(mktemp -d)
 PKG="$WORK/pkg"
 
 dpkg-deb -R "$IN" "$PKG"
+# regenerated at the end with the new paths
+rm -f "$PKG/DEBIAN/md5sums"
 
 mv "$PKG/usr/share/rustdesk" "$PKG/usr/share/fvconnect"
 mv "$PKG/usr/share/fvconnect/rustdesk" "$PKG/usr/share/fvconnect/fvconnect"
@@ -39,8 +41,9 @@ for f in "$PKG"/DEBIAN/control "$PKG"/DEBIAN/preinst "$PKG"/DEBIAN/postinst \
 done
 sed -i 's/^Description: .*/Description: FvConnect - acesso remoto para suporte tecnico (baseado no RustDesk, AGPL-3.0)/' \
   "$PKG/DEBIAN/control"
+sed -i 's|^Homepage: .*|Homepage: https://github.com/luisleno/FvConnect|' "$PKG/DEBIAN/control"
 
-if grep -rIl --exclude-dir=lib --exclude-dir=data -E '(^|[^b])rustdesk' \
+if grep -rIn --exclude-dir=lib --exclude-dir=data -E '(^|[^b])rustdesk' \
      "$PKG/DEBIAN" "$PKG/usr/share/applications" "$PKG/usr/share/fvconnect/files"; then
   echo "rustdesk still referenced in the files above" >&2
   exit 1

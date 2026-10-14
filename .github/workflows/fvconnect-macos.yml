@@ -2,9 +2,6 @@ name: FvConnect - macOS
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - master
 
 env:
   MAC_RUST_VERSION: "1.81"
