@@ -2377,10 +2377,32 @@ fn apply_fvconnect_client() {
             "use-both-passwords".to_owned(),
         );
     }
-    config::HARD_SETTINGS
-        .write()
-        .unwrap()
-        .insert("disable-account".to_owned(), "Y".to_owned());
+    // "Conta" ligada ao portal FvConnect (login do técnico). Sem portal configurado no build,
+    // o botão continua escondido.
+    match option_env!("FVCONNECT_API").filter(|s| !s.is_empty()) {
+        Some(api) => {
+            let mut overwrite = config::OVERWRITE_SETTINGS.write().unwrap();
+            overwrite.insert(keys::OPTION_API_SERVER.to_owned(), api.to_owned());
+            // Sem acesso direto por IP: toda conexão passa pelo servidor (trava de licença).
+            overwrite.insert(keys::OPTION_DIRECT_SERVER.to_owned(), "N".to_owned());
+            drop(overwrite);
+            // O portal não tem catálogo de endereços nem grupos.
+            config::HARD_SETTINGS
+                .write()
+                .unwrap()
+                .insert("disable-ab".to_owned(), "Y".to_owned());
+            config::OVERWRITE_LOCAL_SETTINGS
+                .write()
+                .unwrap()
+                .insert(keys::OPTION_DISABLE_GROUP_PANEL.to_owned(), "Y".to_owned());
+        }
+        None => {
+            config::HARD_SETTINGS
+                .write()
+                .unwrap()
+                .insert("disable-account".to_owned(), "Y".to_owned());
+        }
+    }
     let mut builtin = config::BUILTIN_SETTINGS.write().unwrap();
     for k in [
         keys::OPTION_HIDE_SERVER_SETTINGS,

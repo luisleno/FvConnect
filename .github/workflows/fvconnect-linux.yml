@@ -12,6 +12,8 @@ env:
   VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite"
   VCPKG_COMMIT_ID: "9e593bb18ea69cc5095e012465dcd675a822ed0d"
   VERSION: "1.5.0"
+  # Endereço do portal (login do técnico). Definido em Settings > Variables > Actions do repositório.
+  FVCONNECT_API: ${{ vars.FVCONNECT_API }}
 
 jobs:
   generate-bridge:
@@ -91,6 +93,7 @@ jobs:
           distro: ubuntu18.04
           githubToken: ${{ github.token }}
           dockerRunArgs: |
+            --env FVCONNECT_API
             --volume "${PWD}:/workspace"
             --volume "/opt/artifacts:/opt/artifacts"
           shell: /bin/bash
