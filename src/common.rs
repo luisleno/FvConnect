@@ -2351,7 +2351,10 @@ pub fn rustdesk_interval(i: Interval) -> ThrottledInterval {
 }
 
 const FVCONNECT_APP_NAME: &str = "FvConnect";
-const FVCONNECT_SERVER: &str = "201.76.56.72";
+// Nome em vez de IP: trocar de VPS no futuro é só mudar o DNS.
+const FVCONNECT_SERVER: &str = "srv.fvconnect.net";
+// Portal (login do técnico). Pode ser trocado no build com FVCONNECT_API.
+const FVCONNECT_API_DEFAULT: &str = "https://fvconnect.net";
 const FVCONNECT_KEY: &str = "2wPIuCR5mjfNh6ybZVUGPA4l7qIMEPoHHbrZWV+LQn8=";
 
 fn apply_fvconnect_client() {
@@ -2377,9 +2380,11 @@ fn apply_fvconnect_client() {
             "use-both-passwords".to_owned(),
         );
     }
-    // "Conta" ligada ao portal FvConnect (login do técnico). Sem portal configurado no build,
-    // o botão continua escondido.
-    match option_env!("FVCONNECT_API").filter(|s| !s.is_empty()) {
+    // "Conta" ligada ao portal FvConnect (login do técnico). FVCONNECT_API="-" no build desliga.
+    let api = option_env!("FVCONNECT_API")
+        .filter(|s| !s.is_empty())
+        .unwrap_or(FVCONNECT_API_DEFAULT);
+    match Some(api).filter(|s| *s != "-") {
         Some(api) => {
             let mut overwrite = config::OVERWRITE_SETTINGS.write().unwrap();
             overwrite.insert(keys::OPTION_API_SERVER.to_owned(), api.to_owned());

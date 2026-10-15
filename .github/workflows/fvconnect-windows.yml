@@ -44,7 +44,7 @@ jobs:
         run: |
           cd flutter
           flutter pub get
-          flutter analyze --no-fatal-infos --no-fatal-warnings lib/desktop lib/common.dart
+          flutter analyze --no-fatal-infos --no-fatal-warnings lib/desktop lib/common.dart lib/common/widgets/fv_consent.dart lib/mobile/pages/home_page.dart
 
   build-windows-x64:
     needs: [generate-bridge, analyze-flutter]

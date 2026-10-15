@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_hbb/common/widgets/fv_consent.dart';
 import 'package:flutter_hbb/mobile/pages/server_page.dart';
 import 'package:flutter_hbb/mobile/pages/settings_page.dart';
 import 'package:flutter_hbb/web/settings_page.dart';
@@ -43,6 +44,7 @@ class HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     initPages();
+    WidgetsBinding.instance.addPostFrameCallback((_) => fvEnsureConsent());
   }
 
   void initPages() {
